@@ -409,6 +409,28 @@ writen (int fd, const void *buf, size_t n) {
     return (ssize_t)done;
 }
 
+ssize_t
+readn (int fd, void *dst, size_t size) {
+    size_t done = 0;
+    ssize_t n;
+
+    while (done < size) {
+        n = read(fd, dst, size - done);
+        if (n == -1) {
+            if (errno == EINTR) {
+                continue;
+            }
+            return -1;
+        }
+        if (!n) {
+            break;
+        }
+        done += n;
+        dst += n;
+    }
+    return (ssize_t)done;
+}
+
 size_t
 iovlen (const struct iovec *iov, size_t n) {
     size_t len = 0;
