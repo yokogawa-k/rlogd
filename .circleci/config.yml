@@ -1,0 +1,70 @@
+version: 2.1
+
+# 再利用するためにコマンドの定義
+commands:
+  install_dependencies:
+    steps:
+      - run:
+          name: "Install depedencies"
+          command: |
+            apt-get update
+            apt-get -y install libev-dev libpcre3-dev libmsgpack-dev
+
+  build_rlogd:
+    steps:
+      - run:
+          name: "Build rlogd"
+          command: |
+            ./autogen.sh
+            ./configure
+            make
+
+# job の定義
+jobs:
+  # gcc(linux) 用テスト
+  gcc-linux-build:
+    docker:
+      - image: buildpack-deps:bionic
+    steps:
+      - checkout
+      - install_dependencies
+      - build_rlogd
+
+  # clang(linux) 用テスト
+  clang-linux-build:
+    docker:
+      - image: ubuntu:bionic
+    environment:
+      - CC=clang
+    steps:
+      - checkout
+      - run:
+          name: "Install clang"
+          command: |
+            apt-get update
+            apt-get install autoconf make clang git
+
+      - install_dependencies
+      - build_rlogd
+
+  # clang(macos) 用テスト
+  clang-macos-build:
+    macos:
+      xcode: "10.2.0"
+    environment:
+      - CC=clang
+    steps:
+      - checkout
+      - run:
+          name: "Install depedencies"
+          command: brew install -f libev pcre msgpack
+      - build_rlogd
+
+workflows:
+  version: 2.1
+  build:
+    jobs:
+      - gcc-linux-build
+      - clang-linux-build
+      - clang-macos-build
+
