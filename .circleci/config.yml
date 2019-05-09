@@ -42,7 +42,7 @@ jobs:
           name: "Install clang"
           command: |
             apt-get update
-            apt-get install autoconf make clang git
+            apt-get -y install autoconf make clang git
 
       - install_dependencies
       - build_rlogd
@@ -66,5 +66,4 @@ workflows:
     jobs:
       - gcc-linux-build
       - clang-linux-build
-      - clang-macos-build
 
